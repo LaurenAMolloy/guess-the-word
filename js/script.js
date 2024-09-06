@@ -8,20 +8,20 @@ const remainingGuessesElement = document.querySelector(".remaining");
 const remainingGuessesSpan = document.querySelector(".remaining span");
 const message = document.querySelector(".message");
 const playAgainButton = document.querySelector(".play-again");
-let remainingGuesses = 8;
 
 let word = "magnolia";
 //This array will hold the player guesses
-const guessedLetters = [];
+let guessedLetters = [];
+let remainingGuesses = 8;
+
 
 //Add an Async Function
+//This function retrieves the random words from a textfile
 const getWord = async function () {
-const res = await fetch(
-    "https://gist.githubusercontent.com/skillcrush-curriculum/7061f1d4d3d5bfe47efbfbcfe42bf57e/raw/5ffc447694486e7dea686f34a6c085ae371b43fe/words.txt"
-);
+const res = await fetch("https://gist.githubusercontent.com/skillcrush-curriculum/7061f1d4d3d5bfe47efbfbcfe42bf57e/raw/5ffc447694486e7dea686f34a6c085ae371b43fe/words.txt");
 const words = await res.text();
 const wordArray = words.split("\n");
-console.log(wordArray);
+//console.log(wordArray);
 const randomIndex = Math.floor(Math.random() * wordArray.length);
 word = wordArray[randomIndex].trim();
 placeHolder(word);
@@ -38,14 +38,12 @@ const placeHolder = function (word) {
   const placeholderLetters = [];
   // Loop through each letter in the word
   for (const letter of word) {
-    console.log(letter);
+    //console.log(letter);
     // Add a placeholder (●) for each letter to the placeholderLetters array
     placeholderLetters.push("●");
   }
   wordInProgress.innerText = placeholderLetters.join("");
 };
-
-getWord();
 
 //write an event listener for when the player clicks the guess button
 guessButton.addEventListener("click", function (e) {
@@ -58,7 +56,6 @@ guessButton.addEventListener("click", function (e) {
   const goodGuess = validatePlayerInput(guess);
 
   //This is the bit I do not get....
-
   if (goodGuess) {
     makeGuess(guess);
   }
@@ -69,12 +66,12 @@ const validatePlayerInput = function (input) {
   const acceptedLetter = /[a-zA-Z]/;
   //check if the the input is empty
   if (input.length === 0) {
-    message.innerText = "Hey, enter a letter!";
+    message.innerText = "Please enter a letter!";
   } else if (input.length > 1) {
     //check if only one letter has been entered
-    message.innerText = "Hey, only one letter is allowed";
+    message.innerText = "Please enter only one letter";
   } else if (!input.match(acceptedLetter)) {
-    message.innerText = "Hey, enter a letter from a-z!";
+    message.innerText = "Please enter a letter from a-z!";
   } else {
     return input;
   }
@@ -125,8 +122,9 @@ const updateWordInProgress = function (guessedLetters) {
       revealWord.push("●");
     }
   }
-  console.log(revealWord);
+  //console.log(revealWord);
   wordInProgress.innerText = revealWord.join("");
+  checkIfWon();
 };
 
 //Create a Function to Count Guesses Remaining
@@ -142,8 +140,9 @@ const updateRemainingGuesses = function (guess) {
 
   if (remainingGuesses === 0) {
     message.innerHTML = `The game is over!  The word was <span class="highlight">${word}</span>.`;
+    startOver();
   } else if (remainingGuesses === 1) {
-    remainingGuessesSpan.innerText = `You have ${remainingGuesses} guess remaining`;
+    remainingGuessesSpan.innerText = `${remainingGuesses} guess remaining`;
   } else {
     remainingGuessesSpan.innerText = `${remainingGuesses} guesses`;
   }
@@ -156,5 +155,41 @@ const checkIfWon = function () {
     message.classList.add("win");
     message.innerHTML =
       '<p class="highlight">You guessed correct the word! Congrats!</p>';
+      startOver();
   }
 };
+
+//Create a Function to Hide and Show Elements
+
+const startOver = function () {
+//hide the guessbutton, remaing guesses and guessed letters
+guessButton.classList.add("hide");
+remainingGuessesElement.classList.add("hide");
+guessedLettersElement.classList.add("hide");
+playAgainButton.classList.remove("hide");
+};
+
+//Add a Click Event to the Play Again Button
+playAgainButton.addEventListener("click", function(){
+//remove the class of win 
+message.classList.remove("win");
+//empty the array/ul where the guesses appear
+guessedLetters = [];
+//set remaining guesses back to 8
+remainingGuesses = 8;
+//update span with new amount of guesses??
+remainingGuessesSpan.innerText = `${remainingGuesses} guesses`;
+guessedLettersElement.innerHTML = "";
+//empty the message innerText
+message.innerText = "";
+
+//grab a new word
+getWord();
+
+//Show the guessbutton, remaing guesses and guessed letters
+//hide playAgain
+guessButton.classList.remove("hide");
+playAgainButton.classList.add("hide");
+remainingGuessesElement.classList.remove("hide");
+guessedLettersElement.classList.remove("hide");
+} )
